@@ -1,3 +1,4 @@
+
 // To parse this JSON data, do
 //
 //     final usuario = usuarioFromJson(jsonString);
@@ -10,13 +11,13 @@ String usuarioToJson(Usuario data) => json.encode(data.toJson());
 
 class Usuario {
     Usuario({
-        this.online,
-        this.nombre,
-        this.email,
-        this.uid,
+        required this.online,
+        required this.nombre,
+        required this.email,
+        required this.uid,
     });
 
-    dynamic online;
+    bool online;
     String nombre;
     String email;
     String uid;

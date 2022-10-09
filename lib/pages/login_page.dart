@@ -1,12 +1,16 @@
-import 'package:chat/helpers/mostrar_alerta.dart';
-import 'package:chat/services/auth_service.dart';
+import 'package:chat/services/socket_service.dart';
 import 'package:chat/widgets/boton_azul.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import 'package:chat/widgets/custom_input.dart';
+import 'package:chat/services/auth_service.dart';
+
+import 'package:chat/helpers/mostrar_alerta.dart';
+
 import 'package:chat/widgets/labels.dart';
 import 'package:chat/widgets/logo.dart';
-import 'package:provider/provider.dart';
+import 'package:chat/widgets/custom_input.dart';
+
 
 
 class LoginPage extends StatelessWidget {
@@ -22,20 +26,20 @@ class LoginPage extends StatelessWidget {
             height: MediaQuery.of(context).size.height * 0.9,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-            
-                Logo( titulo: 'Messenger',),
+              children: <Widget>[
+
+                Logo( titulo: 'Messenger' ),
 
                 _Form(),
 
-                Label( 
+                Labels( 
                   ruta: 'register',
                   titulo: '¿No tienes cuenta?',
                   subTitulo: 'Crea una ahora!',
                 ),
 
-                Text('Términos y condiciones de uso', style: TextStyle(fontWeight: FontWeight.w200),)
-                
+                Text('Términos y condiciones de uso', style: TextStyle( fontWeight: FontWeight.w200 ),)
+
               ],
             ),
           ),
@@ -48,7 +52,6 @@ class LoginPage extends StatelessWidget {
 
 
 class _Form extends StatefulWidget {
-
   @override
   __FormState createState() => __FormState();
 }
@@ -56,52 +59,60 @@ class _Form extends StatefulWidget {
 class __FormState extends State<_Form> {
 
   final emailCtrl = TextEditingController();
-  final passCtrl = TextEditingController();
+  final passCtrl  = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    final authService = Provider.of<AuthService>(context);
+
+    final authService = Provider.of<AuthService>( context );
+    final socketService = Provider.of<SocketService>(context);
+
     return Container(
       margin: EdgeInsets.only(top: 40),
-      padding: EdgeInsets.symmetric( horizontal: 50),
-      child: Column(
-        children: [
-          
-          CustomInput(
-            icon: Icons.mail_outline,
-            placeholder: 'Correo',
-            textController: emailCtrl,
-            keyboardType: TextInputType.emailAddress,
-          ),
-          CustomInput(
-            icon: Icons.lock_outline,
-            placeholder: 'Contraseña',
-            textController: passCtrl,
-            isPassword: true,
-          ),
+      padding: EdgeInsets.symmetric( horizontal: 50 ),
+       child: Column(
+         children: <Widget>[
+           
+           CustomInput(
+             icon: Icons.mail_outline,
+             placeholder: 'Correo',
+             keyboardType: TextInputType.emailAddress, 
+             textController: emailCtrl,
+           ),
 
-          BotonAzul(
-            text: 'Ingresar', 
-            onPressed: authService.autenticando? null : () async {
+           CustomInput(
+             icon: Icons.lock_outline,
+             placeholder: 'Contraseña',
+             textController: passCtrl,
+             isPassword: true,
+           ),
+           
 
-              FocusScope.of(context).unfocus();
+           BotonAzul(
+             text: 'Ingrese',
+             onPressed: authService.autenticando 
+              ? () => {} 
+              : () async {
 
-              final loginOk = await authService.login(emailCtrl.text.trim(), passCtrl.text.trim());
+               FocusScope.of(context).unfocus();
 
-              if (loginOk){
-                // TODO: Conectar a nuestro socket server
-                Navigator.pushReplacementNamed(context, 'usuarios');
-              }else{
-                //Mostrar alerta 
-                mostrarAlerta(context, 'Login incorrecto', 'Revise sus credenciales');
-              }
-            }
-          ),
-          
-        ],
-      ),
+               final loginOk = await authService.login( emailCtrl.text.trim(), passCtrl.text.trim() );
+
+                if ( loginOk ) {
+                  socketService.connect();
+                  Navigator.pushReplacementNamed(context, 'usuarios');
+                } else {
+                  // Mostara alerta
+                  mostrarAlerta(context, 'Login incorrecto', 'Revise sus credenciales nuevamente');
+                }
+
+             },
+           )
+
+
+
+         ],
+       ),
     );
   }
 }
-
-
